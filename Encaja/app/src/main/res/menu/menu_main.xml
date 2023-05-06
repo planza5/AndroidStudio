@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+            <item android:id="@+id/m1"
+                android:title="Cambiar dimensiones"/>
+            <item android:id="@+id/m2"
+                android:title="Nuevo"/>
+            <item android:id="@+id/m3"
+                android:title="Guardar"/>
+            <item android:id="@+id/m4"
+                android:title="Guardar como..."/>
+            <item android:id="@+id/m5"
+                android:title="Abrir..."/>
+
+</menu>

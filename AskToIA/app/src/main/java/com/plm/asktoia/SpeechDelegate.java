@@ -6,16 +6,24 @@ import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class SpeechDelegate implements RecognitionListener {
+    public void speak(String text) {
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+    }
+
     public interface SpeechDelegateListener {
         void onSpeechError(String errorMessage);
         void onSpeechResults(String results);
+        void onSpeechStart();
     }
 
     private SpeechRecognizer speechRecognizer;
+    private TextToSpeech textToSpeech;
     private SpeechDelegateListener listener;
 
     public SpeechDelegate(Context context, SpeechDelegateListener listener) {
@@ -23,9 +31,20 @@ public class SpeechDelegate implements RecognitionListener {
         setupSpeechRecognizer(context);
     }
 
-    private void setupSpeechRecognizer(Context context) {
+    public void setupSpeechRecognizer(Context context) {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
         speechRecognizer.setRecognitionListener(this);
+    }
+
+    public void setupTextToSpeech(Context context){
+        textToSpeech = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status != TextToSpeech.ERROR) {
+                    textToSpeech.setLanguage(new Locale("es", "ES"));
+                }
+            }
+        });
     }
 
     public void startListening() {
@@ -52,7 +71,7 @@ public class SpeechDelegate implements RecognitionListener {
 
     @Override
     public void onBeginningOfSpeech() {
-
+       listener.onSpeechStart();
     }
 
     @Override
@@ -95,12 +114,6 @@ public class SpeechDelegate implements RecognitionListener {
     @Override
     public void onEvent(int eventType, Bundle params) {
 
-    }
-
-    public void release() {
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-        }
     }
 
 

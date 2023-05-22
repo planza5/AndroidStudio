@@ -17,7 +17,7 @@
         android:text="Pulsa para hablar" />
 
     <ProgressBar
-        android:id="@+id/progressBar"
+        android:id="@+id/progressBar1"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -37,12 +37,22 @@
         android:maxLines="4" />
 
     <Button
-        android:id="@+id/startPostButton"
+        android:id="@+id/startPostChatGPTButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:text="Enviar a ChatGPT"
+        android:enabled="false"
         android:layout_marginTop="16dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar2"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_toEndOf="@id/startListeningButton"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/responseText"
@@ -53,4 +63,11 @@
         android:hint="Respuesta de ChatGPT"
         android:scrollbars="vertical" />
 
+    <Button
+        android:id="@+id/readResponseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Leer Respuesta"
+        android:layout_marginTop="16dp" />
 </LinearLayout>

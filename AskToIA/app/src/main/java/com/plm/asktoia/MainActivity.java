@@ -15,27 +15,34 @@ import androidx.core.app.ActivityCompat;
 
 import java.lang.ref.WeakReference;
 
-public class MainActivity extends AppCompatActivity implements SpeechDelegate.SpeechDelegateListener {
+public class MainActivity extends AppCompatActivity implements SpeechDelegate.SpeechDelegateListener, ChatGPTApiClient.ChatGPTApiClientListener {
 
-    private SpeechDelegate speechDelegate;
+    private static SpeechDelegate speechDelegate;
+
+    private static ChatGPTApiClient chatGPTApiClient = null;
     private Button startListeningButton;
 
-    private Button startPostButtonn;
+    private Button postTextChatGPTButton;
+    private Button readTextSpeechButton;
     private EditText requestText;
     private TextView responseText;
 
-    private ProgressBar progressBar;
+    private ProgressBar progressBar1;
+    private ProgressBar progressBar2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startPostButtonn = findViewById(R.id.startPostButton);
+        postTextChatGPTButton = findViewById(R.id.startPostChatGPTButton);
         startListeningButton = findViewById(R.id.startListeningButton);
+        readTextSpeechButton = findViewById(R.id.readResponseButton);
+
         requestText = findViewById(R.id.requestText);
         responseText = findViewById(R.id.responseText);
-        progressBar = findViewById(R.id.progressBar);
+        progressBar1 = findViewById(R.id.progressBar1);
+        progressBar2 = findViewById(R.id.progressBar2);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
@@ -43,19 +50,32 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
             setupSpeechDelegate();
         }
 
+        setupChatGPTApiClient();
+
+        speechDelegate.setupTextToSpeech(this);
+        speechDelegate.setupSpeechRecognizer(this);
+
         startListeningButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 speechDelegate.startListening();
-                progressBar.setVisibility(View.VISIBLE);
+                progressBar1.setVisibility(View.VISIBLE);
                 responseText.setText("");
             }
         });
 
-        startPostButtonn.setOnClickListener(new View.OnClickListener() {
+        postTextChatGPTButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 sendTextToChatGPT(requestText.getText().toString());
+            }
+        });
+
+        readTextSpeechButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String text = responseText.getText().toString();
+                speechDelegate.speak(text);
             }
         });
     }
@@ -64,11 +84,15 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        speechDelegate.release();
+        speechDelegate.destroy();
     }
 
     private void setupSpeechDelegate() {
         speechDelegate = new SpeechDelegate(this, this);
+    }
+
+    private void setupChatGPTApiClient(){
+        chatGPTApiClient = new ChatGPTApiClient(MainActivity.this);
     }
 
     @Override
@@ -86,24 +110,45 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
     @Override
     public void onSpeechResults(String text) {
         requestText.setText(text);
-        sendTextToChatGPT(text);
+        setEnabled(true,true,true,false,false);
+    }
+
+    @Override
+    public void onSpeechStart() {
+        setEnabled(false,false,false,true,false);
     }
 
     @Override
     public void onSpeechError(String errorMessage) {
-        responseText.setText(errorMessage);
-        progressBar.setVisibility(View.GONE);
+        setEnabled(true,true,true,true,true);
     }
 
     private void sendTextToChatGPT(String inputText) {
         if (inputText.isEmpty()) {
             responseText.setText("Texto vacío");
-            progressBar.setVisibility(View.GONE);
             return;
         }
 
-        progressBar.setVisibility(View.VISIBLE);
+        progressBar2.setVisibility(View.VISIBLE);
+        progressBar1.setVisibility(View.GONE);
+        startListeningButton.setEnabled(false);
+
         new SendTextToChatGPTTask(this).execute(inputText);
+    }
+
+    @Override
+    public void requestingChatGPT() {
+        setEnabled(false,false,false,false,true);
+    }
+
+    @Override
+    public void resultsChatGPT() {
+        setEnabled(true,true,true,false,false);
+    }
+
+    @Override
+    public void onErrorChatGPT() {
+        setEnabled(true,true,true,false,false);
     }
 
 
@@ -120,16 +165,21 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
         @Override
         protected String doInBackground(String... params) {
             String inputText = params[0];
-            ChatGPTApiClient apiClient = new ChatGPTApiClient();
-            return apiClient.sendTextToChatGPT(inputText);
+            return chatGPTApiClient.sendTextToChatGPT(inputText);
         }
 
         @Override
         protected void onPostExecute(String result) {
-            mainActivity.responseText.setText(result);
-            mainActivity.progressBar.setVisibility(View.GONE);
-            mainActivity.startListeningButton.setEnabled(true);
+            mainActivity.setEnabled(true,true,true,false,false);
         }
+    }
+
+    private void setEnabled(boolean b1, boolean b2, boolean b3, boolean p1, boolean p2){
+        startListeningButton.setEnabled(b1);
+        postTextChatGPTButton.setEnabled(b2);
+        readTextSpeechButton.setEnabled(b3);
+        progressBar1.setVisibility(p1?View.VISIBLE:View.GONE);
+        progressBar2.setVisibility(p2?View.VISIBLE:View.GONE);
     }
 
 }

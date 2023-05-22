@@ -6,13 +6,21 @@ import okhttp3.*;
 import java.io.IOException;
 
 public class ChatGPTApiClient {
-    private static final String API_KEY = "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";
+    private static final String API_KEY = "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";
     private static final String API_URL = "https://api.openai.com/v1/completions";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private final ChatGPTApiClientListener listener;
     private OkHttpClient httpClient;
     private Gson gson;
 
-    public ChatGPTApiClient() {
+    public interface ChatGPTApiClientListener{
+        public void requestingChatGPT();
+        public void resultsChatGPT();
+        public void onErrorChatGPT();
+    }
+
+    public ChatGPTApiClient(ChatGPTApiClientListener listener) {
+        this.listener=listener;
         this.httpClient = new OkHttpClient();
         this.gson = new Gson();
     }
@@ -28,12 +36,16 @@ public class ChatGPTApiClient {
                 .post(requestBody)
                 .build();
 
+        listener.requestingChatGPT();
+
         try (Response response = httpClient.newCall(request).execute()) {
             if (response.isSuccessful()) {
+                listener.resultsChatGPT();
                 String responseBody = response.body().string();
                 return extractAnswerFromResponse(responseBody);
             } else {
-                throw new IOException("Error en la solicitud: " + response);
+                listener.onErrorChatGPT();
+                return "Error "+ response.code();
             }
         } catch (IOException e) {
             return e.getMessage();

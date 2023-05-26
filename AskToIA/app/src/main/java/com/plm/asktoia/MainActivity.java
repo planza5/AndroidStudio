@@ -46,20 +46,21 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
-        } else {
-            setupSpeechDelegate();
         }
 
+        setupSpeechDelegate();
         setupChatGPTApiClient();
 
         speechDelegate.setupTextToSpeech(this);
         speechDelegate.setupSpeechRecognizer(this);
 
+        setEnabled(true,false,false,false, false);
+
         startListeningButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 speechDelegate.startListening();
-                progressBar1.setVisibility(View.VISIBLE);
+                setEnabled(false,false,false,true,false);
                 responseText.setText("");
             }
         });
@@ -110,17 +111,17 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
     @Override
     public void onSpeechResults(String text) {
         requestText.setText(text);
-        setEnabled(true,true,true,false,false);
+        setEnabled(true,true,false,false,false);
     }
 
     @Override
     public void onSpeechStart() {
-        setEnabled(false,false,false,true,false);
+        //setEnabled(true,false,false,false,false);
     }
 
     @Override
     public void onSpeechError(String errorMessage) {
-        setEnabled(true,true,true,true,true);
+        setEnabled(true,false,false,false,false);
     }
 
     private void sendTextToChatGPT(String inputText) {
@@ -165,21 +166,37 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
         @Override
         protected String doInBackground(String... params) {
             String inputText = params[0];
-            return chatGPTApiClient.sendTextToChatGPT(inputText);
+            String result=chatGPTApiClient.sendTextToChatGPT(inputText);
+            return result;
         }
 
         @Override
         protected void onPostExecute(String result) {
             mainActivity.setEnabled(true,true,true,false,false);
+
+            MainActivity activity = activityReference.get();
+
+            if (activity == null || activity.isFinishing())
+                return;
+
+            System.out.println(result);
+            // update the responseText TextView with the result
+            activity.responseText.setText(result);
+            activity.responseText.setText(result);
         }
     }
 
     private void setEnabled(boolean b1, boolean b2, boolean b3, boolean p1, boolean p2){
-        startListeningButton.setEnabled(b1);
-        postTextChatGPTButton.setEnabled(b2);
-        readTextSpeechButton.setEnabled(b3);
-        progressBar1.setVisibility(p1?View.VISIBLE:View.GONE);
-        progressBar2.setVisibility(p2?View.VISIBLE:View.GONE);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                startListeningButton.setEnabled(b1);
+                postTextChatGPTButton.setEnabled(b2);
+                readTextSpeechButton.setEnabled(b3);
+                progressBar1.setVisibility(p1?View.VISIBLE:View.GONE);
+                progressBar2.setVisibility(p2?View.VISIBLE:View.GONE);
+            }
+        });
     }
 
 }

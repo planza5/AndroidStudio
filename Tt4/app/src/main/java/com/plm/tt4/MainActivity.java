@@ -5,25 +5,30 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ItemAdapter.OnItemListener {
-    private Item currrentItem=null;
+
+    private static final int READ_REQUEST_CODE = 2;
+    private Item currentItem =null;
 
     private RecyclerView itemRecyclerView;
     private List<Item> items; // tu lista de items
     private ItemAdapter itemAdapter;
+    private TextView pathTxt;
+    private static final int WRITE_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,11 +36,16 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnIte
         setContentView(R.layout.activity_main);
 
         ImageButton imgBtnBack = findViewById(R.id.img_btn_back);
+        ImageButton imgBtnExport = findViewById(R.id.img_btn_export);
+        ImageButton imgBtnImport = findViewById(R.id.img_btn_import);
+
+        pathTxt = findViewById(R.id.pathTxt);
+
         imgBtnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(currrentItem!=null && currrentItem.getParent()!=null){
-                    onClickNext(currrentItem.getParent());
+                if(currentItem !=null && currentItem.getParent()!=null){
+                    onClickNext(currentItem.getParent());
                 }
             }
         });
@@ -44,24 +54,50 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnIte
         imgBtnPlus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(currrentItem!=null){
-                    new Item(currrentItem,"New...",false);
-                    itemAdapter.notifyDataSetChanged();
+                if(currentItem !=null){
+                    new Item(currentItem,"New...",false);
                     modifiedModel();
+                    itemAdapter.notifyDataSetChanged();
+
                 }
             }
         });
 
-        getSupportActionBar().setTitle("");
+        imgBtnExport.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("application/json");
+                intent.putExtra(Intent.EXTRA_TITLE, "data.json");
+                startActivityForResult(intent, WRITE_REQUEST_CODE);
+            }
+        });
+
+        imgBtnImport.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("application/json");
+                startActivityForResult(intent, READ_REQUEST_CODE);
+            }
+        });
+
+// Manejo de la respuesta del Intent
+
+
+
+        //getSupportActionBar().setTitle("");
 
         //TODO: lo tiene que obtener del json
-        currrentItem=GsonUtils.loadItemFromFile(this);
+        currentItem =GsonUtils.loadItemFromFile(this, Ctes.ITEM_FILE_NAME);
 
 
         itemRecyclerView = findViewById(R.id.itemRecyclerView);
         itemRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        itemAdapter=new ItemAdapter(currrentItem.getChilds(),this);
+        itemAdapter=new ItemAdapter(currentItem.getChilds(),this);
         itemRecyclerView.setAdapter(itemAdapter);
     }
 
@@ -77,9 +113,24 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnIte
     }
 
 
+    private void modifyItemsUntilRoot(Item item){
+        if(item!=null && item.getParent()!=null){
+            if(itemAdapter.areAllChildsDone(item.getParent())){
+                item.getParent().setDone(true);
+            }else{
+                item.getParent().setDone(false);
+            }
+
+        modifyItemsUntilRoot(item.getParent());
+        }
+
+
+    }
+
     @Override
     public void onClickDone(Item item) {
         item.setDone(!item.isDone());
+        modifyItemsUntilRoot(item);
         modifiedModel();
     }
 
@@ -90,7 +141,8 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnIte
 
     @Override
     public void onClickNext(Item item) {
-        currrentItem = item;
+        currentItem = item;
+        itemAdapter.sortItems(item.getChilds());
         itemAdapter.setItemList(item.getChilds());
         itemAdapter.notifyDataSetChanged();
 
@@ -100,11 +152,12 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnIte
         Item currentItem=item.getParent();
 
         while(currentItem!=null && currentItem.getParent()!=null){
-                title.insert(0, currentItem.getName()+" > ");
-                currentItem=currentItem.getParent();
+            title.insert(0, currentItem.getName()+" > ");
+            currentItem=currentItem.getParent();
         }
 
-        getSupportActionBar().setTitle(title);
+
+        pathTxt.setText(title.toString());
     }
 
     @Override
@@ -153,11 +206,12 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnIte
 
     @Override
     public void onClickMenuUp(int position) {
-        if(position>0){
+        if(position>0 && itemAdapter.getItemList().get(position-1).getChilds().isEmpty()==itemAdapter.getItemList().get(position).getChilds().isEmpty()){
             Item p1=itemAdapter.getItemList().get(position-1);
             Item p2=itemAdapter.getItemList().get(position);
             itemAdapter.getItemList().set(position-1,p2);
             itemAdapter.getItemList().set(position,p1);
+            //itemAdapter.sortItems(itemAdapter.getItemList());
             itemAdapter.notifyDataSetChanged();
             modifiedModel();
         }
@@ -165,11 +219,12 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnIte
 
     @Override
     public void onClickMenuDown(int position) {
-        if(position<itemAdapter.getItemCount()-1){
+        if(position<itemAdapter.getItemCount()-1 && itemAdapter.getItemList().get(position+1).getChilds().isEmpty()==itemAdapter.getItemList().get(position).getChilds().isEmpty()){
             Item p1=itemAdapter.getItemList().get(position);
             Item p2=itemAdapter.getItemList().get(position+1);
             itemAdapter.getItemList().set(position,p2);
             itemAdapter.getItemList().set(position+1,p1);
+            itemAdapter.sortItems(itemAdapter.getItemList());
             itemAdapter.notifyDataSetChanged();
             modifiedModel();
         }
@@ -178,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnIte
     @Override
     public void onClickDelete(int position) {
         itemAdapter.getItemList().remove(position);
+        modifiedModel();
         itemAdapter.notifyDataSetChanged();
     }
 
@@ -192,11 +248,11 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnIte
     }
 
     private void modifiedModel(){
-        GsonUtils.saveItemToFile(this,getGrandParent());
+        GsonUtils.saveItemToFile(this,getGrandParent(), Ctes.ITEM_FILE_NAME);
     }
 
     private Item getGrandParent() {
-        Item grandParent=currrentItem;
+        Item grandParent= currentItem;
 
         while(grandParent.getParent()!=null){
             grandParent=grandParent.getParent();
@@ -205,5 +261,29 @@ public class MainActivity extends AppCompatActivity implements ItemAdapter.OnIte
         return grandParent;
     }
 
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        super.onActivityResult(requestCode,resultCode,resultData);
+
+        if (requestCode == WRITE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (resultData != null) {
+                Uri uri = resultData.getData();
+                String str=uri.toString();
+                GsonUtils.saveItemToFile(this,getGrandParent(),resultData.getData().getEncodedPath());
+                // Puedes abrir el archivo para escribir con uri.
+                // Escribir el JSON de los Items en este archivo.
+            }
+        }else  if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (resultData != null) {
+                Uri uri = resultData.getData();
+                currentItem = GsonUtils.loadItemFromFile(this,uri.getEncodedPath());
+                modifiedModel();
+                itemAdapter.notifyDataSetChanged();
+                // Puedes abrir el archivo para leer con uri.
+                // Leer el JSON de los Items de este archivo.
+            }
+        }
+    }
 
 }

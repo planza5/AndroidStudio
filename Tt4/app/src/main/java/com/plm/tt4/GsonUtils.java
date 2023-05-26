@@ -21,14 +21,14 @@ public class GsonUtils {
     private static final String TAG = "GsonUtils";
     private static final String FILE_NAME = Ctes.ITEM_FILE_NAME;
 
-    public static void saveItemToFile(Context context, Item item) {
+    public static void saveItemToFile(Context context, Item item, String fileName) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.addMixIn(Item.class, ItemMixin.class);
 
         try {
             String json = mapper.writeValueAsString(item);
-            File file = new File(context.getFilesDir(), FILE_NAME);
+            File file = new File(context.getFilesDir(), fileName);
             FileOutputStream outputStream = new FileOutputStream(file);
             outputStream.write(json.getBytes());
             outputStream.close();
@@ -38,13 +38,13 @@ public class GsonUtils {
         }
     }
 
-    public static Item loadItemFromFile(Context context) {
+    public static Item loadItemFromFile(Context context, String fileName) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.addMixIn(Item.class, ItemMixin.class);
 
         try {
-            File file = new File(context.getFilesDir(), FILE_NAME);
+            File file = new File(context.getFilesDir(), fileName);
             FileInputStream inputStream = new FileInputStream(file);
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 

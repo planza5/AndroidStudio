@@ -6,7 +6,7 @@ import okhttp3.*;
 import java.io.IOException;
 
 public class ChatGPTApiClient {
-    private static final String API_KEY = "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";
+    private static final String API_KEY = "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";
     private static final String API_URL = "https://api.openai.com/v1/completions";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private final ChatGPTApiClientListener listener;

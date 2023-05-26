@@ -1,5 +1,6 @@
 package com.plm.tt4;
 
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,10 +13,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
-
+    private List<Item> itemList;
     private final OnItemListener listener;
 
     public List<Item> getItemList() {
@@ -40,11 +43,12 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         void onClickDelete(int position);
     }
 
-    private List<Item> itemList;
+
 
     public ItemAdapter(List<Item> itemList, OnItemListener listener) {
         this.itemList = itemList;
         this.listener=listener;
+        sortItems(getItemList());
     }
 
     @NonNull
@@ -54,14 +58,31 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         return new ViewHolder(view);
     }
 
+
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Item item = itemList.get(position);
 
         holder.itemDone.setChecked(item.isDone());
+
+        //holder.itemDone.setVisibility(item.getChilds().isEmpty()?View.VISIBLE:View.INVISIBLE);
+        holder.itemDone.setEnabled(item.getChilds().isEmpty());
+        holder.itemDone.setAlpha(item.getChilds().isEmpty()?1f:0.2f);
+        //ordenamos
+
+
+        if(!item.getChilds().isEmpty()){
+            holder.itemName.setTypeface(null, Typeface.BOLD);
+            holder.itemName.setTextSize(15);
+        }else{
+            holder.itemName.setTypeface(null, Typeface.NORMAL);
+            holder.itemName.setTextSize(14);
+        }
+
         holder.itemName.setText(item.getName());
         holder.currentItem=itemList.get(position);
-        // handle itemMenu and itemArrow clicks here
+
 
         holder.itemMenu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,6 +91,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
             }
         });
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -82,6 +105,7 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         TextView itemName;
         ImageButton itemMenu;
         ImageButton itemArrow;
+
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -113,12 +137,29 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
             });
 
             itemName.setOnClickListener(new View.OnClickListener() {
+                private long lastClickTime = 0;
+
                 @Override
                 public void onClick(View view) {
-                    listener.onClickText(currentItem);
+                    long clickTime = System.currentTimeMillis();
+                    if (clickTime - lastClickTime < 300) { // Verifica si el intervalo entre clics es menor a 300 milisegundos (ajusta según tus necesidades)
+                        listener.onClickText(currentItem);
+                    }
+                    lastClickTime = clickTime;
                 }
             });
+
         }
+    }
+
+    public boolean areAllChildsDone(Item item) {
+        for(Item i:item.getChilds()){
+            if(!i.isDone()){
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void showPopupMenu(View anchorView, final int position) {
@@ -150,5 +191,20 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> {
         popupMenu.show();
     }
 
+
+    public void sortItems(List<Item> list){
+       Collections.sort(list, new Comparator<Item>() {
+           @Override
+           public int compare(Item t1, Item t2) {
+               if (t1.getChilds().isEmpty() && t2.getChilds().isEmpty()) {
+                   return 0;
+               } else if (t1.getChilds().isEmpty() && !t2.getChilds().isEmpty()) {
+                   return +1;
+               }
+
+               return -1;
+           };
+       });
+    }
 }
 

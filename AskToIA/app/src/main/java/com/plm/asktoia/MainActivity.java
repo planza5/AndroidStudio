@@ -78,6 +78,12 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
                 speechDelegate.speak(text);
             }
         });
+
+        byte[] bites=Ctes.API_KEY.getBytes();
+
+        for(byte b:bites){
+            System.out.print(b+",");
+        }
     }
 
 
@@ -175,11 +181,17 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
     }
 
     private void setEnabled(boolean b1, boolean b2, boolean b3, boolean p1, boolean p2){
-        startListeningButton.setEnabled(b1);
-        postTextChatGPTButton.setEnabled(b2);
-        readTextSpeechButton.setEnabled(b3);
-        progressBar1.setVisibility(p1?View.VISIBLE:View.GONE);
-        progressBar2.setVisibility(p2?View.VISIBLE:View.GONE);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                startListeningButton.setEnabled(b1);
+                postTextChatGPTButton.setEnabled(b2);
+                readTextSpeechButton.setEnabled(b3);
+                progressBar1.setVisibility(p1?View.VISIBLE:View.GONE);
+                progressBar2.setVisibility(p2?View.VISIBLE:View.GONE);
+            }
+        });
+
     }
 
 }

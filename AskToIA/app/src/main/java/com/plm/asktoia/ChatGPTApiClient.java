@@ -6,7 +6,6 @@ import okhttp3.*;
 import java.io.IOException;
 
 public class ChatGPTApiClient {
-    private static final String API_KEY = "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";
     private static final String API_URL = "https://api.openai.com/v1/completions";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private final ChatGPTApiClientListener listener;
@@ -23,6 +22,8 @@ public class ChatGPTApiClient {
         this.listener=listener;
         this.httpClient = new OkHttpClient();
         this.gson = new Gson();
+
+
     }
 
     public String sendTextToChatGPT(String inputText) {
@@ -32,7 +33,7 @@ public class ChatGPTApiClient {
         Request request = new Request.Builder()
                 .url(API_URL)
                 .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", "Bearer " + API_KEY)
+                .addHeader("Authorization", "Bearer " + Ctes.getApiKey())
                 .post(requestBody)
                 .build();
 

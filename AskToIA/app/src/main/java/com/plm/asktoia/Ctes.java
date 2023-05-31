@@ -4,6 +4,7 @@ import android.speech.SpeechRecognizer;
 
 public class Ctes {
 
+    public static final String API_KEY = "sk-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";
 
     public static String getError(int errorCode) {
         String errorMessage = "Unknown error";
@@ -44,4 +45,8 @@ public class Ctes {
         return errorMessage;
     }
 
+
+    public static String getApiKey() {
+        return null;
+    }
 }

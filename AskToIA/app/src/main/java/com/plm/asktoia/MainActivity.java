@@ -1,15 +1,19 @@
 package com.plm.asktoia;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -34,6 +38,35 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //API_KEY
+        try{
+            if(Ctes.API_KEY==null){
+                Ctes.API_KEY=Ctes.readApiKey(this);
+
+                if(Ctes.API_KEY==null){
+                    askUserForString(new StringInputCallback() {
+                        @Override
+                        public void onInputReceived(String input) {
+                            Ctes.API_KEY=input;
+                            try {
+                                Ctes.saveApiKey(MainActivity.this,Ctes.API_KEY);
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                                Toast.makeText(MainActivity.this, ex.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+
+                }
+            }
+        }catch(Exception ex){
+            ex.printStackTrace();
+            Toast.makeText(this, ex.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
+
+
 
         postTextChatGPTButton = findViewById(R.id.startPostChatGPTButton);
         startListeningButton = findViewById(R.id.startListeningButton);
@@ -80,13 +113,17 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
             }
         });
 
+        /*
         byte[] bites=Ctes.API_KEY.getBytes();
 
         for(byte b:bites){
             System.out.print(b+",");
-        }
+        }*/
     }
 
+    public void apiKeyAvailable(){
+
+    }
 
     @Override
     protected void onDestroy() {
@@ -203,10 +240,41 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
                 progressBar2.setVisibility(p2?View.VISIBLE:View.GONE);
             }
         });
-<<<<<<< HEAD
-
-=======
->>>>>>> f71a67556a795709e9963ed0d073cc199b7aac17
     }
+
+
+
+    interface StringInputCallback {
+        void onInputReceived(String input);
+    }
+
+    public void askUserForString(final StringInputCallback callback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Ingrese una cadena");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String userInput = input.getText().toString();
+                callback.onInputReceived(userInput);
+            }
+        });
+        builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+
+
+
 
 }

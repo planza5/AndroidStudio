@@ -33,7 +33,7 @@ public class ChatGPTApiClient {
         Request request = new Request.Builder()
                 .url(API_URL)
                 .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", "Bearer " + Ctes.getApiKey())
+                .addHeader("Authorization", "Bearer " + Ctes.API_KEY)
                 .post(requestBody)
                 .build();
 

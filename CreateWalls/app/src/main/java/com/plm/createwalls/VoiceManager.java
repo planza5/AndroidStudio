@@ -25,7 +25,12 @@ public class VoiceManager implements RecognitionListener {
     }
 
 
-    public void startListening() {
+    public void startListening(long delay) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         sr.startListening(createRecognizerIntent());
     }
 
@@ -109,5 +114,14 @@ public class VoiceManager implements RecognitionListener {
     @Override
     public void onEvent(int i, Bundle bundle) {
 
+    }
+
+    public void destroy() {
+        if (sr != null) {
+            sr.destroy();
+        }
+        if (tts != null) {
+            tts.shutdown();
+        }
     }
 }

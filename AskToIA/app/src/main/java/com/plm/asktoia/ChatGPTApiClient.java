@@ -22,8 +22,6 @@ public class ChatGPTApiClient {
         this.listener=listener;
         this.httpClient = new OkHttpClient();
         this.gson = new Gson();
-
-
     }
 
     public String sendTextToChatGPT(String inputText) {
@@ -58,7 +56,7 @@ public class ChatGPTApiClient {
         payload.addProperty("model","text-davinci-003");
         payload.addProperty("prompt", inputText);
         payload.addProperty("temperature", 1.0);
-        payload.addProperty("max_tokens", 150);
+        payload.addProperty("max_tokens", 1000);
         return payload;
     }
 

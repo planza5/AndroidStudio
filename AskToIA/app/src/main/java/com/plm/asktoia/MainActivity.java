@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -33,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
 
     private ProgressBar progressBar1;
     private ProgressBar progressBar2;
+
+    private CheckBox sendDirectlyToChatGPTCheckbox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
         postTextChatGPTButton = findViewById(R.id.startPostChatGPTButton);
         startListeningButton = findViewById(R.id.startListeningButton);
         readTextSpeechButton = findViewById(R.id.readResponseButton);
+        sendDirectlyToChatGPTCheckbox= findViewById(R.id.sendDirectlyToChatGPTCheckbox);
 
         requestText = findViewById(R.id.requestText);
         responseText = findViewById(R.id.responseText);
@@ -155,6 +159,10 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
     public void onSpeechResults(String text) {
         requestText.setText(text);
         setEnabled(true,true,false,false,false);
+
+        if(sendDirectlyToChatGPTCheckbox.isChecked()){
+           sendTextToChatGPT(text);
+        }
     }
 
     @Override
@@ -243,7 +251,6 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
     }
 
 
-
     interface StringInputCallback {
         void onInputReceived(String input);
     }
@@ -272,9 +279,4 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
 
         builder.show();
     }
-
-
-
-
-
 }

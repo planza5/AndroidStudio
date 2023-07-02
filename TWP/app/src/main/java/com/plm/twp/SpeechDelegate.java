@@ -1,4 +1,4 @@
-package com.plm.asktoia;
+package com.plm.twp;
 
 import android.content.Context;
 import android.content.Intent;
@@ -12,14 +12,9 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class SpeechDelegate implements RecognitionListener {
+
     public void speak(String text) {
         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-    }
-
-    public interface SpeechDelegateListener {
-        void onSpeechError(String errorMessage);
-        void onSpeechResults(String results);
-        void onSpeechStart();
     }
 
     private SpeechRecognizer speechRecognizer;
@@ -29,14 +24,15 @@ public class SpeechDelegate implements RecognitionListener {
     public SpeechDelegate(Context context, SpeechDelegateListener listener) {
         this.listener = listener;
         setupSpeechRecognizer(context);
+        setupTextToSpeech(context);
     }
 
-    public void setupSpeechRecognizer(Context context) {
+    private void setupSpeechRecognizer(Context context) {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
         speechRecognizer.setRecognitionListener(this);
     }
 
-    public void setupTextToSpeech(Context context){
+    private void setupTextToSpeech(Context context){
         textToSpeech = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -56,6 +52,7 @@ public class SpeechDelegate implements RecognitionListener {
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES");
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+
         return recognizerIntent;
     }
 
@@ -92,7 +89,7 @@ public class SpeechDelegate implements RecognitionListener {
     @Override
     public void onError(int error) {
         String errorMessage = Ctes.getError(error);
-        listener.onSpeechError(errorMessage);
+        listener.onSpeechError(error, errorMessage);
     }
 
     @Override
@@ -103,7 +100,7 @@ public class SpeechDelegate implements RecognitionListener {
             String dictatedText = matches.get(0);
             listener.onSpeechResults(dictatedText);
         } else {
-            listener.onSpeechError("No se encontraron coincidencias");
+            listener.onSpeechError(111,"No se encontraron coincidencias");
         }
 
     }

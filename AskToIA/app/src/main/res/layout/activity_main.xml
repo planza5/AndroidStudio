@@ -9,6 +9,14 @@
     android:paddingTop="16dp"
     tools:context=".MainActivity">
 
+    <CheckBox
+        android:id="@+id/sendDirectlyToChatGPTCheckbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enviar directamente a ChatGPT"
+        android:checked="true"
+        android:layout_gravity="center_horizontal" />
+
     <Button
         android:id="@+id/startListeningButton"
         android:layout_width="wrap_content"
@@ -35,6 +43,9 @@
         android:inputType="textMultiLine"
         android:lines="4"
         android:maxLines="4" />
+
+
+
 
     <Button
         android:id="@+id/startPostChatGPTButton"

@@ -14,12 +14,14 @@ public class Ctes {
     public final static int COLUMNS = 25;
     public final static int MARGIN_RIGHT = 100;
     public final static int MARGIN_LEFT = 100;
+    public final static Paint whitePaint;
     public final static Paint gridPaint;
     public final static Paint paintDayNumberRed;
     public final static Paint paintMonthName;
     public final static Paint paintDayNumberBlack;
     public final static SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM", Locale.getDefault());
     public final static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+    public static SimpleDateFormat yearFormat= new SimpleDateFormat("yyyy");
 
     static{
         gridPaint = new Paint();
@@ -39,5 +41,8 @@ public class Ctes {
         paintDayNumberBlack = new Paint();
         paintDayNumberBlack.setTextSize(35);
         paintDayNumberBlack.setColor(Color.BLACK);
+
+        whitePaint=new Paint(Paint.ANTI_ALIAS_FLAG);
+        whitePaint.setColor(Color.WHITE);
     }
 }

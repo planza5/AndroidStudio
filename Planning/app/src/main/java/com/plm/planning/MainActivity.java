@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
         CustomView myDrawingView = new CustomView(this);
         setContentView(myDrawingView);
 
+
         try {
             tasks.add(new Task("28/08/2023","30/08/2023"));
         } catch (ParseException e) {

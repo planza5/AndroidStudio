@@ -1,41 +1,94 @@
 package com.plm.planning;
 
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.view.MotionEvent;
 import android.view.View;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class CustomView extends View {
 
 
-    private int columns=25;
-    private Date date=new Date();
+
+    private Date initViewDate =new Date();
+    private Date endViewDate;
     private int screenWidth;
     private int screenHeight;
     private int interval;
     private int xcells,ycells;
 
-    private int marginDay =40;
-    private int marginMonth =80;
 
 
+
+    @SuppressLint("ClickableViewAccessibility")
     public CustomView(Activity context) {
         super(context);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         context.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+        this.setOnTouchListener(new View.OnTouchListener(){
+            private float initialX, initialY;
+            private boolean isDragging = false;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        // Registrar coordenadas iniciales
+                        initialX = event.getX();
+                        initialY = event.getY();
+                        return true;
+
+                    case MotionEvent.ACTION_MOVE:
+                        // Determinar si se ha movido lo suficiente para considerarlo un arrastre
+                        float distX = initialX - event.getX();
+                        float distY = initialY - event.getY();
+
+                        if (!isDragging) {
+                            if (Math.abs(initialX - event.getX()) > interval || Math.abs(initialY - event.getY()) > interval) {
+                                isDragging = true;
+
+                                // Lógica adicional para cuando inicia el arrastre
+                            }
+                        }else{
+                            int numDaysMoved = (int) distX/interval;
+                            initViewDate = DateUtils.addDays(initViewDate,numDaysMoved);
+
+                            CustomView.this.invalidate();
+                        }
+
+                        return isDragging;
+
+                    case MotionEvent.ACTION_UP:
+                        if (isDragging) {
+                            // Coordenadas finales
+                            float endX = event.getX();
+                            float endY = event.getY();
+
+                            // Realizar la lógica de soltura aquí
+                            // ...
+
+                            isDragging = false;
+                            return true;
+                        }
+
+                    default:
+                        return false;
+                }
+            }
+        });
+
     }
 
     public CustomView(Context context, AttributeSet attrs) {
@@ -47,13 +100,16 @@ public class CustomView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        screenWidth = getWidth(); // Ancho de la pantalla
-        screenHeight = getHeight(); // Alto de la pantalla
+        if(screenWidth==0){
+            screenWidth = getWidth(); // Ancho de la pantalla
+            screenHeight = getHeight(); // Alto de la pantalla
 
-        // Espacio entre las líneas
-        interval = screenWidth / columns;
-        xcells = screenWidth / interval + 1;
-        ycells = (screenHeight - marginDay - marginMonth)/interval + 1;
+            // Espacio entre las líneas
+            interval = (screenWidth - Ctes.MARGIN_RIGHT - Ctes.MARGIN_LEFT)/ Ctes.COLUMNS;
+            xcells = (screenWidth - Ctes.MARGIN_RIGHT - Ctes.MARGIN_LEFT) / interval ;
+            ycells = (screenHeight - Ctes.TOP_MARGIN_DAY - Ctes.TOP_MARGIN_MONTH)/interval;
+            endViewDate = DateUtils.addDays(initViewDate,xcells);
+        }
 
         drawGrid(canvas);
         drawDates(canvas);
@@ -62,88 +118,94 @@ public class CustomView extends View {
     }
 
     private void drawDates(Canvas canvas) {
-        Date dateTemp=cloneDate(date);
+        Date dateTemp= DateUtils.cloneDate(initViewDate);
 
         for(int col = 0; col< xcells; col++){
             drawDateDay(canvas,col, dateTemp);
-            dateTemp=Utils.getNextDay(cloneDate(dateTemp));
+            dateTemp= DateUtils.getNextDay(dateTemp);
         }
     }
 
-    private Date cloneDate(Date date) {
-        return new Date(date.getTime());
-    }
 
     private void drawDateDay(Canvas canvas,int col, Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        String dayOfMonth=getWeekDayInitial(date)+calendar.get(Calendar.DAY_OF_MONTH);
-        int x= (int) (col*interval+interval/2- Utils.paintDayNumberBlack.measureText(dayOfMonth)/2);
+        String dayOfMonth= DateUtils.getWeekDayInitial(date)+calendar.get(Calendar.DAY_OF_MONTH);
+        int x= (int) (Ctes.MARGIN_LEFT + col*interval+interval/2- Ctes.paintDayNumberBlack.measureText(dayOfMonth)/2);
         //canvas.drawRect(col*interval,0,interval,marginTop,gridPaintOrange);
-        canvas.drawText(dayOfMonth,x,marginMonth+marginDay/2, calendar.get(Calendar.DAY_OF_WEEK)==6 ||  calendar.get(Calendar.DAY_OF_WEEK)==7? Utils.paintDayNumberRed : Utils.paintDayNumberBlack);
+        canvas.drawText(dayOfMonth,x,Ctes.TOP_MARGIN + Ctes.TOP_MARGIN_MONTH +Ctes.TOP_MARGIN_DAY/2, calendar.get(Calendar.DAY_OF_WEEK)==6 ||  calendar.get(Calendar.DAY_OF_WEEK)==7? Ctes.paintDayNumberRed : Ctes.paintDayNumberBlack);
 
     }
 
-    private SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM", Locale.getDefault());
-
-    private void drawMonthNames(Canvas canvas){
-        Date dateTemp=cloneDate(date);
-
-        List<String> months=new ArrayList();
-        Calendar cal=Calendar.getInstance();
 
 
-        for(int col=0;col<xcells;col++){
+    private void drawMonthNames(Canvas canvas) {
+        Date dateTemp = DateUtils.cloneDate(initViewDate);
+
+        List<String> months = new ArrayList();
+        Calendar cal = Calendar.getInstance();
+
+
+        for (int col = 0; col < xcells; col++) {
             cal.setTime(dateTemp);
-            int month=cal.get(Calendar.DAY_OF_MONTH);
+            int month = cal.get(Calendar.DAY_OF_MONTH);
 
-            if(month==1){
-                String monthName=monthFormat.format(cal.getTime());
-                Paint.FontMetrics fm = Utils.paintMonthName.getFontMetrics();
-                float y = marginMonth / 2 - (fm.ascent + fm.descent) / 2;
+            if (month == 1) {
+                String monthName = Ctes.monthFormat.format(cal.getTime());
+                monthName = Character.toUpperCase(monthName.charAt(0)) + monthName.substring(1);
 
-                canvas.drawText(Character.toUpperCase(monthName.charAt(0)) + monthName.substring(1),col*interval+interval/3,y, Utils.paintMonthName);
-                canvas.drawLine(col*interval,0,col*interval,screenHeight,Utils.paintMonthName);
+                Paint.FontMetrics fm = Ctes.paintMonthName.getFontMetrics();
+                float y = Ctes.TOP_MARGIN + Ctes.TOP_MARGIN_MONTH / 2 - (fm.ascent + fm.descent) / 2;
+
+                canvas.drawText(monthName, Ctes.MARGIN_LEFT + col * interval + interval / 3, y, Ctes.paintMonthName);
+
+                //linea separacion meses
+                canvas.drawLine(Ctes.MARGIN_LEFT + col * interval, Ctes.TOP_MARGIN, Ctes.MARGIN_LEFT + col * interval, screenHeight - Ctes.BOTTOM_MARGIN, Ctes.paintMonthName);
             }
 
-            dateTemp=Utils.getNextDay(dateTemp);
-        }
-    }
+            if (DateUtils.isLastDayOfMonth(dateTemp)) {
+                String monthName = Ctes.monthFormat.format(cal.getTime());
+                monthName = Character.toUpperCase(monthName.charAt(0)) + monthName.substring(1);
+                float stringWidth = Ctes.paintMonthName.measureText(monthName);
 
-    private String getWeekDayInitial(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+                Paint.FontMetrics fm = Ctes.paintMonthName.getFontMetrics();
+                float y = Ctes.TOP_MARGIN + Ctes.TOP_MARGIN_MONTH / 2 - (fm.ascent + fm.descent) / 2;
 
-        switch (calendar.get(Calendar.DAY_OF_WEEK)){
-            case 1:
-                return "L";
-            case 2:
-                return "M";
-            case 3:
-                return "X";
-            case 4:
-                return "J";
-            case 5:
-                return "V";
-            case 6:
-                return "S";
-            case 7:
-                return "D";
+                canvas.drawText(monthName, Ctes.MARGIN_LEFT + col * interval - stringWidth + interval -interval / 3, y, Ctes.paintMonthName);
+            }
+
+            dateTemp = DateUtils.getNextDay(dateTemp);
         }
 
-        return "?";
     }
 
     private void drawGrid(Canvas canvas) {
 
-        for (int i = 0; i < xcells; i++) {
+        //vertical
+        for (int i = 0; i < xcells + 1; i++) {
             int x = i * interval;
-            canvas.drawLine(x, marginMonth, x, screenHeight, Utils.gridPaint);
+            canvas.drawLine(x + Ctes.MARGIN_LEFT, Ctes.TOP_MARGIN + Ctes.TOP_MARGIN_MONTH, x+Ctes.MARGIN_LEFT, screenHeight-Ctes.BOTTOM_MARGIN, Ctes.gridPaint);
         }
 
-        for (int i = 0; i < ycells; i++) {
-            int y = i * interval;
-            canvas.drawLine(0, y+ marginDay+ marginMonth, screenWidth, y+ marginDay + marginMonth, Utils.gridPaint);
+        int y = Ctes.TOP_MARGIN + Ctes.TOP_MARGIN_DAY + Ctes.TOP_MARGIN_MONTH;
+
+        //horizontal
+        while (y<screenHeight-Ctes.BOTTOM_MARGIN) {
+            canvas.drawLine(Ctes.MARGIN_LEFT, y , screenWidth - Ctes.MARGIN_RIGHT, y , Ctes.gridPaint);
+            y = y + interval;
+        }
+
+        //vertical
+        canvas.drawLine(Ctes.MARGIN_LEFT,Ctes.TOP_MARGIN,Ctes.MARGIN_LEFT,screenHeight-Ctes.BOTTOM_MARGIN,Ctes.paintMonthName);
+        canvas.drawLine(screenWidth-Ctes.MARGIN_RIGHT,Ctes.TOP_MARGIN,screenWidth-Ctes.MARGIN_RIGHT,screenHeight-Ctes.BOTTOM_MARGIN,Ctes.paintMonthName);
+        //horizontal
+        canvas.drawLine(Ctes.MARGIN_LEFT, Ctes.TOP_MARGIN, screenWidth - Ctes.MARGIN_RIGHT, Ctes.TOP_MARGIN, Ctes.paintMonthName);
+        canvas.drawLine(Ctes.MARGIN_LEFT, screenHeight-Ctes.BOTTOM_MARGIN, screenWidth - Ctes.MARGIN_RIGHT, screenHeight-Ctes.BOTTOM_MARGIN, Ctes.paintMonthName);
+    }
+
+    private void drawTasks(){
+        for(Task task:Model.TASKS){
+
         }
     }
 }

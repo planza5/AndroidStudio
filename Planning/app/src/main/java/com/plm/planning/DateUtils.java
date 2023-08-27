@@ -1,12 +1,13 @@
 package com.plm.planning;
 
-import android.graphics.Color;
-import android.graphics.Paint;
-
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Calendar;
 import java.util.Date;
 
-public class Utils {
+public class DateUtils {
 
 
     public static final Date getNextDay(Date date) {
@@ -44,4 +45,26 @@ public class Utils {
         return new Date(date.getTime());
     }
 
+    public static Date makeDate(String date) throws ParseException {
+        return Ctes.dateFormat.parse(date);
+    }
+
+    public static Date addDays(Date initViewDate, int xcells) {
+        Calendar cal=Calendar.getInstance();
+        cal.setTime(initViewDate);
+        cal.add(Calendar.DAY_OF_MONTH,xcells);
+
+        return cal.getTime();
+    }
+
+    public static boolean isLastDayOfMonth(Date date) {
+        // Convierte java.util.Date a java.time.LocalDate
+        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // Encuentra el último día del mes para la fecha convertida
+        LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
+
+        // Compara la fecha convertida con el último día del mes
+        return localDate.equals(lastDayOfMonth);
+    }
 }

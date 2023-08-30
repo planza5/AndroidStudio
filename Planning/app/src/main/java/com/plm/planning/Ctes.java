@@ -12,8 +12,8 @@ public class Ctes {
     public final static int TOP_MARGIN_MONTH = 100;
     public final static int BOTTOM_MARGIN = 100;
     public final static int COLUMNS = 25;
-    public final static int MARGIN_RIGHT = 100;
-    public final static int MARGIN_LEFT = 100;
+    public final static int MARGIN_RIGHT = 150;
+    public final static int MARGIN_LEFT = 150;
     public final static Paint whitePaint;
     public final static Paint gridPaint;
     public final static Paint paintDayNumberRed;

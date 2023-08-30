@@ -4,6 +4,8 @@ package com.plm.planning;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
@@ -18,7 +20,7 @@ import java.util.List;
 
 public class CustomView extends View {
 
-
+    private int idx=0;
 
     private Date initViewDate =new Date();
     private Date endViewDate;
@@ -29,17 +31,23 @@ public class CustomView extends View {
 
 
 
+    private static final int BRISK_THRESHOLD = 30;
 
     @SuppressLint("ClickableViewAccessibility")
     public CustomView(Activity context) {
         super(context);
 
+
+
+
         DisplayMetrics displayMetrics = new DisplayMetrics();
         context.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
+
         this.setOnTouchListener(new View.OnTouchListener(){
             private float initialX, initialY;
-            private boolean isDragging = false;
+            private int px1=0, py1=0;
+            private float lastX;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -48,57 +56,43 @@ public class CustomView extends View {
                         // Registrar coordenadas iniciales
                         initialX = event.getX();
                         initialY = event.getY();
+                        px1 = (int)(initialX-Ctes.MARGIN_LEFT)/interval;
+                        py1 = (int)(initialY-Ctes.TOP_MARGIN_MONTH-Ctes.TOP_MARGIN_DAY-Ctes.TOP_MARGIN)/interval;
+                        lastX = initialX;
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        // Determinar si se ha movido lo suficiente para considerarlo un arrastre
-                        int px1=0;
-                        int py1=0;
+                        int px2 = (int)(event.getX()-Ctes.MARGIN_LEFT)/interval;
+                        int py2 = (int)(event.getY()-Ctes.TOP_MARGIN_MONTH-Ctes.TOP_MARGIN_DAY-Ctes.TOP_MARGIN)/interval;
 
-                        if (!isDragging) {
-                            px1 = (int)(event.getX()-Ctes.MARGIN_LEFT)/interval;
-                            py1 = (int)(event.getY()-Ctes.TOP_MARGIN_MONTH-Ctes.TOP_MARGIN_DAY-Ctes.TOP_MARGIN)/interval;
+                        float deltaX = event.getX() - lastX;
+                        lastX = event.getX();
 
-                            if (Math.abs(initialX - event.getX()) > interval || Math.abs(initialY - event.getY()) > interval) {
-                                isDragging = true;
-                            }
-                        }else{
-                            int px2 = (int)(event.getX()-Ctes.MARGIN_LEFT)/interval;
-                            int py2 = (int)(event.getY()-Ctes.TOP_MARGIN_MONTH-Ctes.TOP_MARGIN_DAY-Ctes.TOP_MARGIN)/interval;
+                        int mvx = px1 - px2;
 
-                            int mvx = px2 - px1;
-                            int mvy = py2 - py1;
+                        // Si el movimiento en X es brusco, multiplica el movimiento
+                        if (Math.abs(deltaX) > BRISK_THRESHOLD) {
+                            mvx = mvx * 3; // puedes ajustar este multiplicador según lo rápido que quieras que sea
+                        }
 
-                            System.out.println(mvx);
-
-
+                        if (Math.abs(initialX - event.getX()) > interval || Math.abs(initialY - event.getY()) > interval) {
                             initViewDate = DateUtils.addDays(initViewDate, mvx);
                             invalidate();
                             px1 = px2;
                             py1 = py2;
-
                         }
-
-                        return isDragging;
+                        return true;
 
                     case MotionEvent.ACTION_UP:
-                        if (isDragging) {
-                            // Coordenadas finales
-                            float endX = event.getX();
-                            float endY = event.getY();
-
-                            // Realizar la lógica de soltura aquí
-                            // ...
-
-                            isDragging = false;
-                            return true;
-                        }
+                        return true;
 
                     default:
                         return false;
                 }
             }
         });
+
+
 
     }
 

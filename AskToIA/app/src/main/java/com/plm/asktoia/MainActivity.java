@@ -5,7 +5,10 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -116,6 +119,27 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
                 speechDelegate.speak(text);
             }
         });
+
+        /*requestText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(requestText.getText().length()>0){
+                    requestText.setEnabled(true);
+                }else{
+                    requestText.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });*/
 
         /*
         byte[] bites=Ctes.API_KEY.getBytes();
@@ -242,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
             @Override
             public void run() {
                 startListeningButton.setEnabled(b1);
-                postTextChatGPTButton.setEnabled(b2);
+                postTextChatGPTButton.setEnabled(true);
                 readTextSpeechButton.setEnabled(b3);
                 progressBar1.setVisibility(p1?View.VISIBLE:View.GONE);
                 progressBar2.setVisibility(p2?View.VISIBLE:View.GONE);

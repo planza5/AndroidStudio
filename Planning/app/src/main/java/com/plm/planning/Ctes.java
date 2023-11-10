@@ -7,10 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class Ctes {
-    public final static int TOP_MARGIN = 100;
+    public final static int TOP_MARGIN = 50;
     public final static int TOP_MARGIN_DAY = 40;
     public final static int TOP_MARGIN_MONTH = 100;
-    public final static int BOTTOM_MARGIN = 100;
+    public final static int BOTTOM_MARGIN = 150;
     public final static int COLUMNS = 25;
     public final static int MARGIN_RIGHT = 150;
     public final static int MARGIN_LEFT = 150;
@@ -19,6 +19,8 @@ public class Ctes {
     public final static Paint paintDayNumberRed;
     public final static Paint paintMonthName;
     public final static Paint paintDayNumberBlack;
+
+    public final static Paint paintLittleMonthName;
     public final static SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM", Locale.getDefault());
     public final static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
     public static SimpleDateFormat yearFormat= new SimpleDateFormat("yyyy");
@@ -37,6 +39,10 @@ public class Ctes {
         paintMonthName = new Paint();
         paintMonthName.setTextSize(50);
         paintMonthName.setColor(Color.BLACK);
+
+        paintLittleMonthName = new Paint();
+        paintLittleMonthName.setTextSize(30);
+        paintLittleMonthName.setColor(Color.BLACK);
 
         paintDayNumberBlack = new Paint();
         paintDayNumberBlack.setTextSize(35);

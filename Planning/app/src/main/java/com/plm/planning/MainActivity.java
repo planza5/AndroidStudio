@@ -12,8 +12,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private List<Task> tasks=new ArrayList();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,9 +22,8 @@ public class MainActivity extends AppCompatActivity {
         CustomView myDrawingView = new CustomView(this);
         setContentView(myDrawingView);
 
-
         try {
-            tasks.add(new Task("28/08/2023","30/08/2023"));
+            Model.getTasks().add( new Task("31/08/2023","06/09/2023"));
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }

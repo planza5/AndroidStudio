@@ -4,14 +4,19 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Model {
-    public static List<Task> TASKS=new ArrayList<>();
+import kotlin.collections.ArrayDeque;
 
-    static{
-        try {
-            TASKS.add(new Task(DateUtils.makeDate("28/08/2023"),DateUtils.makeDate("02/09/2023")));
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
+public class Model {
+    public static List<Task> TASKS;
+
+
+    public static List<Task> getTasks(){
+        if(TASKS==null){
+            TASKS=new ArrayList<>();
         }
+
+        return TASKS;
     }
+
+
 }

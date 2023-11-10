@@ -119,6 +119,7 @@ public class CustomView extends View {
 
         drawDates(canvas);
         drawMonthNames(canvas);
+        drawTasks();
         drawGrid(canvas);
 
     }
@@ -170,17 +171,18 @@ public class CustomView extends View {
                 canvas.drawLine(Ctes.MARGIN_LEFT + col * interval, Ctes.TOP_MARGIN, Ctes.MARGIN_LEFT + col * interval, screenHeight - Ctes.BOTTOM_MARGIN, Ctes.paintMonthName);
             }
 
+            /*
             if (DateUtils.isLastDayOfMonth(dateTemp)) {
                 String year = Ctes.yearFormat.format(cal.getTime());
                 String monthName = Ctes.monthFormat.format(cal.getTime());
                 monthName = Character.toUpperCase(monthName.charAt(0)) + monthName.substring(1);
-                float stringWidth = Ctes.paintMonthName.measureText(monthName+" "+year);
+                float stringWidth = Ctes.paintLittleMonthName.measureText(monthName+" "+year);
 
-                Paint.FontMetrics fm = Ctes.paintMonthName.getFontMetrics();
+                Paint.FontMetrics fm = Ctes.paintLittleMonthName.getFontMetrics();
                 float y = Ctes.TOP_MARGIN + Ctes.TOP_MARGIN_MONTH / 2 - (fm.ascent + fm.descent) / 2;
 
-                canvas.drawText(monthName+" "+year, Ctes.MARGIN_LEFT + col * interval - stringWidth + interval -interval / 3, y, Ctes.paintMonthName);
-            }
+                canvas.drawText(monthName+" "+year, Ctes.MARGIN_LEFT + col * interval - stringWidth + interval -interval / 3, y, Ctes.paintLittleMonthName);
+            }*/
 
             dateTemp = DateUtils.getNextDay(dateTemp);
         }
@@ -215,7 +217,8 @@ public class CustomView extends View {
     }
 
     private void drawTasks(){
-        for(Task task:Model.TASKS){
+        
+        for(Task task:Model.getTasks()){
 
         }
     }

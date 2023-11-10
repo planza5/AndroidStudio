@@ -1,27 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="top"
     android:orientation="vertical"
-    android:paddingTop="16dp"
-    tools:context=".MainActivity">
+    android:gravity="center_horizontal"
+    android:paddingTop="16dp">
 
     <CheckBox
         android:id="@+id/sendDirectlyToChatGPTCheckbox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Enviar directamente a ChatGPT"
-        android:checked="true"
-        android:layout_gravity="center_horizontal" />
+        android:checked="true" />
 
     <Button
         android:id="@+id/startListeningButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
         android:text="Pulsa para hablar" />
 
     <ProgressBar
@@ -29,8 +24,6 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_toEndOf="@id/startListeningButton"
         android:visibility="gone" />
 
     <EditText
@@ -38,20 +31,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:gravity="top"
-        android:hint="Texto dictado aquí"
         android:inputType="textMultiLine"
         android:lines="4"
-        android:maxLines="4" />
-
-
-
+        android:maxLines="4"
+        android:hint="Texto dictado aquí"
+        android:gravity="start" />
 
     <Button
         android:id="@+id/startPostChatGPTButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
         android:text="Enviar a ChatGPT"
         android:enabled="false"
         android:layout_marginTop="16dp" />
@@ -61,24 +50,24 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_toEndOf="@id/startListeningButton"
         android:visibility="gone" />
 
-    <TextView
-        android:id="@+id/responseText"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="top"
-        android:hint="Respuesta de ChatGPT"
-        android:scrollbars="vertical" />
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <TextView
+            android:id="@+id/responseText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Respuesta de ChatGPT"
+            android:scrollbars="vertical" />
+    </ScrollView>
 
     <Button
         android:id="@+id/readResponseButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
         android:text="Leer Respuesta"
         android:layout_marginTop="16dp" />
 </LinearLayout>

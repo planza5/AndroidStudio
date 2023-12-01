@@ -22,7 +22,11 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.tabLayout);
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> {
-                    // Configurar el título de la pestaña según la posición
+                    if(position==0){
+                        tab.setText("Spirometry");
+                    }else if(position==1){
+                        tab.setText("Graph in time");
+                    }
                 }
         ).attach();
 

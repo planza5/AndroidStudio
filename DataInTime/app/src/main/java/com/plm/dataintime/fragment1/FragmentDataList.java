@@ -36,15 +36,28 @@ public class FragmentDataList extends Fragment {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
 
-        Data data=new Data();
 
         try {
-            data.setDate("14/10/1968");
-            data.setFev1("10");
-
             List<Data> myDataset=new ArrayList();
-            myDataset.add(new Data());
-            myDataset.add(data);
+            myDataset.add(new Data("14/10/1968",69.13f,3410f,4940f, 68f));
+            myDataset.add(new Data("15/11/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
+            myDataset.add(new Data("13/12/1968",1f,1f,1f, 1f));
 
             RecyclerView.Adapter mAdapter = new MyAdapter(myDataset);
             recyclerView.setAdapter(mAdapter);

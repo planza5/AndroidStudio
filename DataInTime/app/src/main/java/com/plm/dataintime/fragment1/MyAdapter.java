@@ -52,11 +52,11 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     // Reemplaza el contenido de una vista (invocado por el layout manager)
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        holder.txtDate.setText(mDataset.get(position).getDate().toString());
-        holder.txtFev1.setText(Float.toString(mDataset.get(position).getFev1()));
-        holder.txtFev.setText(Float.toString(mDataset.get(position).getFev()));
-        holder.txtFev1Cvf.setText(Float.toString(mDataset.get(position).getFev1Cvf()));
-        holder.txtCvf.setText(Float.toString(mDataset.get(position).getCvf()));
+        holder.txtDate.setText(mDataset.get(position).getStringDate());
+        holder.txtFev1Cvf.setText("FEV1/CVF: "+Float.toString(mDataset.get(position).getFev1Cvf()));
+        holder.txtFev1.setText("FEV1: "+Float.toString(mDataset.get(position).getFev1()));
+        holder.txtCvf.setText("CVF: "+Float.toString(mDataset.get(position).getCvf()));
+        holder.txtFev.setText("FEV: "+Float.toString(mDataset.get(position).getFev()));
     }
 
     // Retorna el tamaño de tu dataset (invocado por el layout manager)

@@ -5,10 +5,16 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Data {
-    public Data(String date, float fev1Cvf, float fev1, float cvf, float fev){
-        this.date = date;
-    }
     private final static SimpleDateFormat sdf=new SimpleDateFormat("dd/MM/yyyy");
+
+    public Data(String date, float fev1Cvf, float fev1, float cvf, float fev) throws ParseException {
+        this.date = sdf.parse(date);
+        this.fev1Cvf = fev1Cvf;
+        this.fev1 = fev1;
+        this.cvf = cvf;
+        this.fev = fev;
+    }
+
     private Date date;
     private float fev1Cvf;
     private float fev1;
@@ -17,6 +23,10 @@ public class Data {
 
     public Date getDate() {
         return date;
+    }
+
+    public String getStringDate(){
+        return sdf.format(date);
     }
 
     public void setDate(Date date) {

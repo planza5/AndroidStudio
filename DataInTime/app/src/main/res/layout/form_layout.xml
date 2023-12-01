@@ -1,0 +1,63 @@
+<!-- dialog_add_data.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/editTextDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Date (dd/MM/yy)"
+        android:inputType="date" />
+
+    <EditText
+        android:id="@+id/editTextFev1Cvf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="FEV1/CVF"
+        android:inputType="numberDecimal" />
+
+    <EditText
+        android:id="@+id/editTextFev1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="FEV1"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/editTextFev1Tpc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="FEV1 TPC"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/editTextCvf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="CVF"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/editTextCvfTpc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="CVF TPC"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/editTextFev2575"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="FEV25-75"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/editTextFev2575Tpc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="FEV25-75 TPC"
+        android:inputType="number" />
+</LinearLayout>

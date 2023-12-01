@@ -2,41 +2,62 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="16dp">
+    android:gravity="center">
 
     <TextView
         android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="15sp"
-        android:layout_marginEnd="15dp"/>
+        android:textSize="13sp"
+        android:layout_marginEnd="5dp"/>
 
     <TextView
         android:id="@+id/fev1Cvf"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="15sp"
-        android:layout_marginEnd="15dp"/>
+        android:textSize="13sp"
+        android:layout_marginEnd="5dp"/>
 
     <TextView
         android:id="@+id/fev1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="15sp"
-        android:layout_marginEnd="15dp"/>
+        android:textSize="13sp"
+        android:layout_marginEnd="5dp"/>
+
+    <TextView
+        android:id="@+id/fev1Tpc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:layout_marginEnd="5dp"/>
 
     <TextView
         android:id="@+id/cvf"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="15sp"
-        android:layout_marginEnd="15dp"/>
+        android:textSize="13sp"
+        android:layout_marginEnd="5dp"/>
 
     <TextView
-        android:id="@+id/fev"
+        android:id="@+id/cvfTpc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="15sp"
-        android:layout_marginEnd="15dp"/>
+        android:textSize="13sp"
+        android:layout_marginEnd="5dp"/>
+
+    <TextView
+        android:id="@+id/fev_25_75"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:layout_marginEnd="5dp"/>
+
+    <TextView
+        android:id="@+id/fev_25_75_Tpc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:layout_marginEnd="5dp"/>
 
 </LinearLayout>

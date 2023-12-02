@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,8 +25,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class FragmentDataList extends Fragment {
-
+public class FragmentDataList extends Fragment{
+    private MyAdapter mAdapter;
     private List<Data> myDataSet;
 
     @Nullable
@@ -46,131 +47,208 @@ public class FragmentDataList extends Fragment {
 
 
         myDataSet = DataManager.loadData(getContext());
-        RecyclerView.Adapter mAdapter = new MyAdapter(myDataSet);
+        mAdapter = new MyAdapter(myDataSet, new OnItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                mAdapter.setSelectedPos(position);
+            }
+        });
+
         recyclerView.setAdapter(mAdapter);
 
         Button addButton = view.findViewById(R.id.add_button);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                // Inflate and set the layout for the dialog
-                LayoutInflater inflater = getLayoutInflater();
-                View dialogView = inflater.inflate(R.layout.form_layout, null);
-                builder.setView(dialogView);
-
-                // Configura los EditText aquí si es necesario
-
-                // Agrega botones de acción para el diálogo
-                builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        EditText editTextDate = dialogView.findViewById(R.id.editTextDate);
-                        Date date = null;
-
-                        try {
-                            date = Data.getSdf().parse(editTextDate.getText().toString());
-                        } catch (ParseException e) {
-                           alert("La fecha no es válida");
-                        }
-
-                        EditText editTextFev1Cvf = dialogView.findViewById(R.id.editTextFev1Cvf);
-                        float fev1Cvf = 0;
-
-                        try{
-                            fev1Cvf=Float.parseFloat(editTextFev1Cvf.getText().toString());
-                        }catch (NumberFormatException nfe){
-                            alert("fev1Cvf no es válido");
-                        }
-
-
-                        EditText editTextFev1 = dialogView.findViewById(R.id.editTextFev1);
-                        int fev1 = 0;
-
-                        try {
-                            fev1=Integer.parseInt(editTextFev1.getText().toString());
-                        } catch (NumberFormatException e) {
-                            alert("a");
-                        }
-
-
-                        EditText editTextFev1Tpc = dialogView.findViewById(R.id.editTextFev1Tpc);
-                        int fev1Tpc = 0;
-
-                        try {
-                            fev1Tpc=Integer.parseInt(editTextFev1Tpc.getText().toString());
-                        } catch (NumberFormatException e) {
-                            alert("a");
-                        }
-
-
-                        EditText editTextCvf = dialogView.findViewById(R.id.editTextCvf);
-                        int cvf = 0;
-
-                        try {
-                            cvf = Integer.parseInt(editTextCvf.getText().toString());
-                        } catch (NumberFormatException e) {
-                            alert("a");
-                        }
-
-
-
-                        EditText editTextCvfTpc = dialogView.findViewById(R.id.editTextCvfTpc);
-                        int cvfTpc = 0;
-
-                        try {
-                            cvfTpc = Integer.parseInt(editTextCvfTpc.getText().toString());
-                        } catch (NumberFormatException e) {
-                            alert("a");
-                        }
-
-
-                        EditText editTextFev2575 = dialogView.findViewById(R.id.editTextFev2575);
-                        int fev2575 = 0;
-
-                        try {
-                            fev2575 = Integer.parseInt(editTextFev2575.getText().toString());
-                        } catch (NumberFormatException e) {
-                            alert("a");
-                        }
-
-                        EditText editTextFev2575Tpc = dialogView.findViewById(R.id.editTextFev2575Tpc);
-                        int fev2575Tpc = 0;
-
-                        try {
-                            fev2575Tpc = Integer.parseInt(editTextFev2575Tpc.getText().toString());
-                        } catch (NumberFormatException e) {
-                            alert("a");
-                        }
-
-
-                        try {
-                            Data newData = new Data(date, fev1Cvf, fev1, fev1Tpc, cvf, cvfTpc, fev2575, fev2575Tpc);
-                            myDataSet.add(newData);
-                            mAdapter.notifyDataSetChanged();
-                            DataManager.saveData(getContext(),myDataSet);
-                        } catch (NumberFormatException | ParseException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    private void alert(String message) {
-                    }
-                });
-
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-                AlertDialog dialog = builder.create();
-                dialog.show();
+                openAddDialog();
             }
         });
 
+        Button editButton = view.findViewById(R.id.edit_button);
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Data selectedItem = mAdapter.getSelectedItem();
+                if (selectedItem != null) {
+                    // Abre el diálogo con los datos existentes
+                    openEditDialog(selectedItem);
+                } else {
+                    // Mostrar mensaje de error o indicación para seleccionar un elemento
+                    Toast.makeText(getContext(), "Por favor, selecciona un elemento para editar", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
+    }
+
+    private void openAddDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        // Inflate and set the layout for the dialog
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.form_layout, null);
+        builder.setView(dialogView);
+
+        // Configura los EditText aquí si es necesario
+
+        // Agrega botones de acción para el diálogo
+        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                try {
+                    Data newData=buildDataFromForm(dialogView);
+                    myDataSet.add(newData);
+                    mAdapter.notifyDataSetChanged();
+                    DataManager.saveData(getContext(),myDataSet);
+                } catch (NumberFormatException | ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+    }
+
+    private Data buildDataFromForm(View dialogView) throws ParseException {
+        EditText editTextDate = dialogView.findViewById(R.id.editTextDate);
+        Date date = null;
+
+        try {
+            date = Data.getSdf().parse(editTextDate.getText().toString());
+        } catch (ParseException e) {
+            alert("La fecha no es válida");
+        }
+
+        EditText editTextFev1Cvf = dialogView.findViewById(R.id.editTextFev1Cvf);
+        float fev1Cvf = 0;
+
+        try{
+            fev1Cvf=Float.parseFloat(editTextFev1Cvf.getText().toString());
+        }catch (NumberFormatException nfe){
+            alert("fev1Cvf no es válido");
+        }
+
+
+        EditText editTextFev1 = dialogView.findViewById(R.id.editTextFev1);
+        int fev1 = 0;
+
+        try {
+            fev1=Integer.parseInt(editTextFev1.getText().toString());
+        } catch (NumberFormatException e) {
+            alert("a");
+        }
+
+
+        EditText editTextFev1Tpc = dialogView.findViewById(R.id.editTextFev1Tpc);
+        int fev1Tpc = 0;
+
+        try {
+            fev1Tpc=Integer.parseInt(editTextFev1Tpc.getText().toString());
+        } catch (NumberFormatException e) {
+            alert("a");
+        }
+
+
+        EditText editTextCvf = dialogView.findViewById(R.id.editTextCvf);
+        int cvf = 0;
+
+        try {
+            cvf = Integer.parseInt(editTextCvf.getText().toString());
+        } catch (NumberFormatException e) {
+            alert("a");
+        }
+
+
+
+        EditText editTextCvfTpc = dialogView.findViewById(R.id.editTextCvfTpc);
+        int cvfTpc = 0;
+
+        try {
+            cvfTpc = Integer.parseInt(editTextCvfTpc.getText().toString());
+        } catch (NumberFormatException e) {
+            alert("a");
+        }
+
+
+        EditText editTextFev2575 = dialogView.findViewById(R.id.editTextFev2575);
+        int fev2575 = 0;
+
+        try {
+            fev2575 = Integer.parseInt(editTextFev2575.getText().toString());
+        } catch (NumberFormatException e) {
+            alert("a");
+        }
+
+        EditText editTextFev2575Tpc = dialogView.findViewById(R.id.editTextFev2575Tpc);
+        int fev2575Tpc = 0;
+
+        try {
+            fev2575Tpc = Integer.parseInt(editTextFev2575Tpc.getText().toString());
+        } catch (NumberFormatException e) {
+            alert("a");
+        }
+
+        return new Data(date, fev1Cvf, fev1, fev1Tpc, cvf, cvfTpc, fev2575, fev2575Tpc);
+    }
+
+    private void alert(String a) {
+    }
+
+    private void openEditDialog(Data selectedItem) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.form_layout, null);
+        builder.setView(dialogView);
+
+        // Encuentra los EditText y establece los valores existentes
+        EditText editTextDate = dialogView.findViewById(R.id.editTextDate);
+        editTextDate.setText(selectedItem.getStringDate()); // Formato de fecha como String
+
+        EditText editTextFev1Cvf = dialogView.findViewById(R.id.editTextFev1Cvf);
+        editTextFev1Cvf.setText(String.valueOf(selectedItem.getFev1Cvf())); // Convertir a String
+
+        EditText editTextFev1 = dialogView.findViewById(R.id.editTextFev1);
+        editTextFev1.setText(String.valueOf(selectedItem.getFev1())); // Convertir a String
+
+        EditText editTextFev1Tpc = dialogView.findViewById(R.id.editTextFev1Tpc);
+        editTextFev1Tpc.setText(String.valueOf(selectedItem.getFev1Tpc())); // Convertir a String
+
+        EditText editTextCvf = dialogView.findViewById(R.id.editTextCvf);
+        editTextCvf.setText(String.valueOf(selectedItem.getCvf())); // Convertir a String
+
+        EditText editTextCvfTpc = dialogView.findViewById(R.id.editTextCvfTpc);
+        editTextCvfTpc.setText(String.valueOf(selectedItem.getCvfTpc())); // Convertir a String
+
+        EditText editTextFev2575 = dialogView.findViewById(R.id.editTextFev2575);
+        editTextFev2575.setText(String.valueOf(selectedItem.getFev2575())); // Convertir a String
+
+        EditText editTextFev2575Tpc = dialogView.findViewById(R.id.editTextFev2575Tpc);
+        editTextFev2575Tpc.setText(String.valueOf(selectedItem.getFev2575Tpc())); // Convertir a String
+
+        // Configura los botones del diálogo
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Aquí manejas la actualización de los datos
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
 }

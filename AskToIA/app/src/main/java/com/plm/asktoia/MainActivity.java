@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
     private ProgressBar progressBar2;
 
     private CheckBox sendDirectlyToChatGPTCheckbox;
+    private boolean reading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,8 +116,21 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
         readTextSpeechButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String text = responseText.getText().toString();
-                speechDelegate.speak(text);
+                if(!reading){
+                    String text = responseText.getText().toString();
+                    speechDelegate.speak(text);
+                }
+                else{
+                    speechDelegate.stop();
+
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            readTextSpeechButton.setText("Leer Respuesta");
+                        }
+                    });
+                    reading = false;
+                }
             }
         });
 
@@ -192,6 +206,29 @@ public class MainActivity extends AppCompatActivity implements SpeechDelegate.Sp
     @Override
     public void onSpeechStart() {
         //setEnabled(true,false,false,false,false);
+    }
+
+    @Override
+    public void endText() {
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                readTextSpeechButton.setText("Leer Respuesta");
+            }
+        });
+        reading = false;
+    }
+
+    @Override
+    public void startText() {
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                readTextSpeechButton.setText("Parar de Leer");
+            }
+        });
+
+        reading=true;
     }
 
     @Override

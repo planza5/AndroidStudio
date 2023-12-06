@@ -8,13 +8,25 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.plm.dataintime.Data;
 import com.plm.dataintime.R;
+import com.plm.dataintime.SharedViewModel;
+
+import java.util.List;
 
 public class FragmentDataInTime extends Fragment {
+    private List<Data> dataInTime;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_data_in_time, container, false);
+        SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        dataInTime=sharedViewModel.getData().getValue();
+
+        DataView dataView = new DataView(getContext(),dataInTime);
+
+        return dataView;
     }
 }

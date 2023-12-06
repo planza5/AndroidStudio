@@ -13,21 +13,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.plm.dataintime.Data;
 import com.plm.dataintime.DataManager;
 import com.plm.dataintime.R;
+import com.plm.dataintime.SharedViewModel;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class FragmentDataList extends Fragment{
     private MyAdapter mAdapter;
-    private List<Data> myDataSet;
+    private List<Data> dataInTime;
 
     @Nullable
     @Override
@@ -46,8 +47,11 @@ public class FragmentDataList extends Fragment{
         recyclerView.setLayoutManager(layoutManager);
 
 
-        myDataSet = DataManager.loadData(getContext());
-        mAdapter = new MyAdapter(myDataSet, new OnItemClickListener() {
+        SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        dataInTime=sharedViewModel.getData().getValue();
+        dataInTime = DataManager.loadData(getContext());
+
+        mAdapter = new MyAdapter(dataInTime, new OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
                 mAdapter.setSelectedPos(position);
@@ -96,9 +100,9 @@ public class FragmentDataList extends Fragment{
             public void onClick(DialogInterface dialog, int which) {
                 try {
                     Data newData=buildDataFromForm(dialogView);
-                    myDataSet.add(newData);
+                    dataInTime.add(newData);
                     mAdapter.notifyDataSetChanged();
-                    DataManager.saveData(getContext(),myDataSet);
+                    DataManager.saveData(getContext(), dataInTime);
                 } catch (NumberFormatException | ParseException e) {
                     e.printStackTrace();
                 }

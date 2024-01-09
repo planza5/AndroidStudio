@@ -6,6 +6,7 @@ import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,27 +29,42 @@ public class MainActivity extends AppCompatActivity {
     final int DIM_BATCH_SIZE = 1;
     final int DIM_PIXEL_SIZE = 3;
     final int NUM_BYTES_PER_CHANNEL = 4;
-    final int NUM_CLASS = 1001;
+    final int NUM_CLASS = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        new Manage().test();
+
         try {
             //Obtenemos el modelo
             Interpreter tflite = new Interpreter(getModel());
             //Obtenemos la imagen
-            ByteBuffer imgData = getImageData(R.drawable.gato);
+            ByteBuffer imgData = convertBitmapToByteBuffer(R.drawable.hourglass);
 
 
             float[][] labelProbArray = new float[1][NUM_CLASS];
             tflite.run(imgData,labelProbArray);
 
-            System.out.println();
+            int predictedClass=argMax(labelProbArray[0]);
+            Log.d("PABLO","He visto un "+Classification.getLabel(this,predictedClass));
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public int argMax(float[] array) {
+        int maxIndex = 0;
+        float max = array[0];
+        for (int i = 1; i < array.length; i++) {
+            if (array[i] > max) {
+                max = array[i];
+                maxIndex = i;
+            }
+        }
+        return maxIndex;
     }
 
 
@@ -62,58 +78,29 @@ public class MainActivity extends AppCompatActivity {
         return model;
     }
 
-    public ByteBuffer getImageData(int id){
+    private ByteBuffer convertBitmapToByteBuffer(int id) {
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), id);
-        bitmap= Bitmap.createScaledBitmap(bitmap,IMAGE_SIZE_X,IMAGE_SIZE_Y,false);
-        int[] intValues = new int[IMAGE_SIZE_X * IMAGE_SIZE_Y];
+        bitmap=Bitmap.createScaledBitmap(bitmap,224,224, true);
+        ByteBuffer byteBuffer;
+        int sizeImage = 224; // Tamaño típico para MobileNetV2
+        byteBuffer = ByteBuffer.allocateDirect(4 * sizeImage * sizeImage * 3); // 4 bytes por píxel (float), 3 canales (RGB)
+        byteBuffer.order(ByteOrder.nativeOrder());
+        int[] intValues = new int[sizeImage * sizeImage];
+
         bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-
-        ByteBuffer imgData =
-                ByteBuffer.allocateDirect(
-                        DIM_BATCH_SIZE
-                                * IMAGE_SIZE_X
-                                * IMAGE_SIZE_Y
-                                * DIM_PIXEL_SIZE
-                                * NUM_BYTES_PER_CHANNEL);
-        imgData.rewind();
-
-        // Float model.
-        int pixel=0;
-        for (int i = 0; i < IMAGE_SIZE_X; ++i) {
-            for (int j = 0; j < IMAGE_SIZE_Y; ++j) {
-                int pixelValue = intValues[pixel++];
-
-                int pixelValue1 = (pixelValue >> 16) & 0xFF;
-                int pixelValue2 = (pixelValue >> 8) & 0xFF;
-                int pixelValue3 = (pixelValue) & 0xFF;
-
-                if(pixel<100)
-                    System.out.println(pixel+": "+pixelValue3+", "+pixelValue2+", "+pixelValue1);
-
-                float pixelValue1f = pixelValue1 - IMAGE_MEAN_X;
-                float pixelValue2f = pixelValue2 - IMAGE_MEAN_Y;
-                float pixelValue3f = pixelValue3 - IMAGE_MEAN_Z;
-
-
-                imgData.putFloat(pixelValue1f);
-                imgData.putFloat(pixelValue2f);
-                imgData.putFloat(pixelValue3f);
-
-                System.out.println();
+        int pixel = 0;
+        for (int i = 0; i < sizeImage; ++i) {
+            for (int j = 0; j < sizeImage; ++j) {
+                final int val = intValues[pixel++];
+                // Sustrae los valores específicos de cada canal de color
+                byteBuffer.putFloat((((val >> 16) & 0xFF) - 103.939f) ); // R
+                byteBuffer.putFloat((((val >> 8) & 0xFF) - 116.779f) );  // G
+                byteBuffer.putFloat(((val & 0xFF) - 123.68f) );          // B
             }
         }
-
-        // Quantized model.
-        /*pixel=0;
-        for (int i = 0; i < IMAGE_SIZE_X; ++i) {
-            for (int j = 0; j < IMAGE_SIZE_Y; ++j) {
-                int pixelValue = intValues[pixel++];
-                imgData.put((byte) ((pixelValue >> 16) & 0xFF));
-                imgData.put((byte) ((pixelValue >> 8) & 0xFF));
-                imgData.put((byte) (pixelValue & 0xFF));
-            }
-        }*/
-
-        return imgData;
+        return byteBuffer;
     }
+
+
+
 }

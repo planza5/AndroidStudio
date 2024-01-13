@@ -13,76 +13,59 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Bundle;
 import android.content.Context;
+import android.util.Log;
 import android.util.Size;
 
-public class MainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity implements CameraCallback{
+    private CameraHandler ch;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ch = new CameraHandler(this);
+
+
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.CAMERA}, 111);
+        }else{
+            ch.openCamera(this);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 111) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+               ch.openCamera(this);
+            } else {
+                Log.e("PABLO","No se pudo abrir la camara por permisos");
+            }
+        }
+    }
+
+    @Override
+    public void onCameraOpen(CameraHandler ch) {
         try {
-            getSizesCamera();
+            Size[] sizes=ch.getSizesCamera(this);
+
+            for(Size size:sizes){
+                Log.d("PABLO","w="+size.getWidth()+", "+size.getHeight());
+            }
         } catch (CameraAccessException e) {
             throw new RuntimeException(e);
         }
+    }
 
+    @Override
+    public void onCameraError() {
+        Log.d("PABLO","w="+size.getWidth()+", "+size.getHeight());
 
     }
 
-    private void getSizesCamera() throws CameraAccessException {
-        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-        String cameraId = manager.getCameraIdList()[0]; // ID de la cámara, ej: cámara trasera
+    @Override
+    public void onCameraClosed() {
 
-        CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
-        StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-
-        Size[] sizes = map.getOutputSizes(ImageFormat.JPEG);
-
-        for (Size size : sizes) {
-            int width = size.getWidth();
-            int height = size.getHeight();
-        }
-
-    }
-
-    private void openCamera(){
-        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-        String cameraId = null;
-        try {
-            cameraId = manager.getCameraIdList()[0];
-            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
-                return;
-            }
-
-            manager.openCamera(cameraId, new CameraDevice.StateCallback() {
-                @Override
-                public void onOpened(@NonNull CameraDevice cameraDevice) {
-                    // Cámara abierta correctamente
-                    // Aquí debes continuar con la configuración de tu sesión de captura
-                }
-
-                @Override
-                public void onDisconnected(@NonNull CameraDevice cameraDevice) {
-                    cameraDevice.close();
-                }
-
-                @Override
-                public void onError(@NonNull CameraDevice cameraDevice, int error) {
-                    cameraDevice.close();
-                }
-            }, null); // Añade un Handler aquí si estás trabajando en un hilo diferente al principal
-
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
     }
 }

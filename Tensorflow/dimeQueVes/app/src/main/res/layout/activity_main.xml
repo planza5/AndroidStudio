@@ -19,14 +19,29 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
-    <SurfaceView
-        android:id="@+id/surfaceView"
-        android:layout_width="298dp"
-        android:layout_height="317dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/takePhotoButton" />
+<LinearLayout
+    android:orientation="vertical"
+    android:id="@+id/linearLayout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/takePhotoButton">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewView"
+            android:layout_width="320dp"
+            android:layout_height="240dp">
+
+        </androidx.camera.view.PreviewView>
+
+        <SurfaceView
+            android:id="@+id/overlayImageView"
+            android:layout_width="320dp"
+            android:layout_height="240dp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter" />
+</LinearLayout>
 
     <TextView
         android:id="@+id/defsTextView"
@@ -36,6 +51,6 @@
         android:textSize="16sp"
         android:layout_marginTop="32dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/surfaceView" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

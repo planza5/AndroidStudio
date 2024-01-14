@@ -2,6 +2,7 @@ package com.plm.dimequeves;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.view.PreviewView;
 
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements CameraCallback{
     private CameraHandler ch;
     private SurfaceView surfaceView;
+    private PreviewView previevView;
     private Button takePhotoButton;
     private Yolov5TFLiteDetector detector;
     private TextView defsTextView;
@@ -46,26 +48,37 @@ public class MainActivity extends AppCompatActivity implements CameraCallback{
             }
         });
 
-        surfaceView = findViewById(R.id.surfaceView);
+        previevView = findViewById(R.id.previewView);
+        previevView.setScaleType(PreviewView.ScaleType.FILL_CENTER); // Otras opciones: FILL_START, FILL_END, etc.
+
+        surfaceView = findViewById(R.id.overlayImageView);
+
         SurfaceHolder holder = surfaceView.getHolder();
         holder.addCallback(new SurfaceHolder.Callback() {
             @Override
-            public void surfaceCreated(SurfaceHolder holder) {
+            public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+                ch=new CameraHandler(MainActivity.this);
+
                 try {
-                    ch = new CameraHandler(MainActivity.this);
-                    ch.configureCamera();
+                    ch.configureCamera(previevView);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
+
+
+
             }
 
             @Override
             public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+
             }
 
             @Override
             public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
+
             }
+            // Implementa los métodos necesarios aquí
         });
 
         //IA
@@ -73,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements CameraCallback{
         
         detector.setModelFile("yolov5s-int8");
         detector.initialModel(this);
+
+
     }
 
     @Override
@@ -82,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements CameraCallback{
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.d("PABLO","Permisos concedidos cámara");
                 try {
-                    ch.configureCamera();
+                    ch.configureCamera(previevView);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -121,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements CameraCallback{
             String name=rec.getLabelName();
             RectF location = rec.getLocation();
             Log.d("PABLO","Veo objeto "+name);
-            buffer.append(name).append(" ").append((int)(rec.getConfidence()*100)+"%").append("\r\n");
+            buffer.append(name).append(" ").append((int)(rec.getConfidence()*100)+"%").append(" ");
         }
 
         defsTextView.setText(buffer.toString());

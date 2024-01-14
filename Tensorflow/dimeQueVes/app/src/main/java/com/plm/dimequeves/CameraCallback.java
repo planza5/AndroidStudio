@@ -1,7 +1,9 @@
 package com.plm.dimequeves;
 
+import android.graphics.Bitmap;
+
 public interface CameraCallback {
-    public void onCameraOpen(CameraHandler cameraHandler);
-    public void onCameraError();
-    public void onCameraClosed();
+    public void onCameraError(String message);
+    public void onNewPhoto(Bitmap bitmap);
+    public void onCameraConfigured();
 }

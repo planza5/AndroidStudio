@@ -2,35 +2,77 @@ package com.plm.dimequeves;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
 import android.content.pm.PackageManager;
-import android.graphics.ImageFormat;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.params.StreamConfigurationMap;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.RectF;
 import android.os.Bundle;
-import android.content.Context;
 import android.util.Log;
-import android.util.Size;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.plm.dimequeves.ia.Recognition;
+import com.plm.dimequeves.ia.Yolov5TFLiteDetector;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements CameraCallback{
     private CameraHandler ch;
+    private SurfaceView surfaceView;
+    private Button takePhotoButton;
+    private Yolov5TFLiteDetector detector;
+    private TextView defsTextView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ch = new CameraHandler(this);
+        defsTextView=findViewById(R.id.defsTextView);
+        takePhotoButton = findViewById(R.id.takePhotoButton);
+        takePhotoButton.setOnClickListener(new View.OnClickListener() {
+            
+            @Override
+            public void onClick(View view) {
+                try {
+                    ch.takePhoto();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
 
+        surfaceView = findViewById(R.id.surfaceView);
+        SurfaceHolder holder = surfaceView.getHolder();
+        holder.addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                try {
+                    ch = new CameraHandler(MainActivity.this);
+                    ch.configureCamera();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.CAMERA}, 111);
-        }else{
-            ch.openCamera(this);
-        }
+            @Override
+            public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
+            }
+        });
+
+        //IA
+        detector=new Yolov5TFLiteDetector();
+        
+        detector.setModelFile("yolov5s-int8");
+        detector.initialModel(this);
     }
 
     @Override
@@ -38,34 +80,56 @@ public class MainActivity extends AppCompatActivity implements CameraCallback{
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 111) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-               ch.openCamera(this);
+                Log.d("PABLO","Permisos concedidos cámara");
+                try {
+                    ch.configureCamera();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             } else {
                 Log.e("PABLO","No se pudo abrir la camara por permisos");
             }
         }
     }
 
-    @Override
-    public void onCameraOpen(CameraHandler ch) {
-        try {
-            Size[] sizes=ch.getSizesCamera(this);
 
-            for(Size size:sizes){
-                Log.d("PABLO","w="+size.getWidth()+", "+size.getHeight());
-            }
-        } catch (CameraAccessException e) {
-            throw new RuntimeException(e);
+
+    @Override
+    public void onCameraError(String message) {
+        Log.d("PABLO","error="+message);
+        takePhotoButton.setEnabled(false);
+    }
+
+
+    @Override
+    public void onNewPhoto(Bitmap bitmap) {
+        Log.d("PABLO","New Photo");
+        Canvas canvas = surfaceView.getHolder().lockCanvas();
+
+        if (canvas != null) {
+            canvas.drawBitmap(bitmap, 0, 0, null); // x, y son las coordenadas
+            surfaceView.getHolder().unlockCanvasAndPost(canvas);
         }
+
+
+
+        ArrayList<Recognition> res = detector.detect(bitmap);
+
+        StringBuffer buffer=new StringBuffer();
+
+        for(Recognition rec:res){
+            String name=rec.getLabelName();
+            RectF location = rec.getLocation();
+            Log.d("PABLO","Veo objeto "+name);
+            buffer.append(name).append(" ").append((int)(rec.getConfidence()*100)+"%").append("\r\n");
+        }
+
+        defsTextView.setText(buffer.toString());
     }
 
     @Override
-    public void onCameraError() {
-        Log.d("PABLO","w="+size.getWidth()+", "+size.getHeight());
-
-    }
-
-    @Override
-    public void onCameraClosed() {
-
+    public void onCameraConfigured() {
+        Log.d("PABLO","Camera configured");
+        takePhotoButton.setEnabled(true);
     }
 }

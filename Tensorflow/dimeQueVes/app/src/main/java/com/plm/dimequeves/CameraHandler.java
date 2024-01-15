@@ -13,6 +13,8 @@ import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
+import androidx.camera.core.resolutionselector.ResolutionSelector;
+import androidx.camera.core.resolutionselector.ResolutionStrategy;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
@@ -86,13 +88,15 @@ public class CameraHandler {
 
     private void bindCameraUseCases(ProcessCameraProvider cameraProvider, PreviewView previewView) {
         // Configuración de ImageCapture
+
         imageCapture = new ImageCapture.Builder()
-                .setTargetResolution(new Size(320, 240))
+                .setTargetResolution(new Size(160,120))
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build();
 
+
         Preview preview = new Preview.Builder()
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3) // o RATIO_4_3 dependiendo de tus necesidades
+                .setTargetResolution(new Size(160,120))
                 .build();
 
 

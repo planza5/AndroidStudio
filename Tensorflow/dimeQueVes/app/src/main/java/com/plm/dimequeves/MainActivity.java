@@ -7,6 +7,8 @@ import androidx.camera.view.PreviewView;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.util.Log;
@@ -115,31 +117,42 @@ public class MainActivity extends AppCompatActivity implements CameraCallback{
         takePhotoButton.setEnabled(false);
     }
 
-
     @Override
     public void onNewPhoto(Bitmap bitmap) {
-        Log.d("PABLO","New Photo");
+        Paint p = new Paint();
+        p.setColor(Color.WHITE); // Establece el color del borde del rectángulo
+        p.setStyle(Paint.Style.STROKE); // Establece el estilo para dibujar solo el borde
+        p.setStrokeWidth(2); // Establece el ancho del borde
+
         Canvas canvas = surfaceView.getHolder().lockCanvas();
-
         if (canvas != null) {
+            float scaleX = (float) canvas.getWidth() / 320;
+            float scaleY = (float) canvas.getHeight() / 320;
+
             canvas.drawBitmap(bitmap, 0, 0, null); // x, y son las coordenadas
+
+            ArrayList<Recognition> res = detector.detect(bitmap);
+            StringBuffer buffer = new StringBuffer();
+
+            for (Recognition rec : res) {
+                RectF location = rec.getLocation();
+                location.left *= scaleX;
+                location.right *= scaleX;
+                location.top *= scaleY;
+                location.bottom *= scaleY;
+
+                if (rec.getConfidence() < 50.0f) {
+                    canvas.drawRect(location, p);
+                }
+
+                buffer.append(rec.getLabelName()+" "+(int)(rec.getConfidence()*100)).append("%");
+            }
+
+            defsTextView.setText(buffer.toString());
             surfaceView.getHolder().unlockCanvasAndPost(canvas);
+
         }
 
-
-
-        ArrayList<Recognition> res = detector.detect(bitmap);
-
-        StringBuffer buffer=new StringBuffer();
-
-        for(Recognition rec:res){
-            String name=rec.getLabelName();
-            RectF location = rec.getLocation();
-            Log.d("PABLO","Veo objeto "+name);
-            buffer.append(name).append(" ").append((int)(rec.getConfidence()*100)+"%").append(" ");
-        }
-
-        defsTextView.setText(buffer.toString());
     }
 
     @Override
